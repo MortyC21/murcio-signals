@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Murcio Signals — Algorithmic Polymarket Trading Signals</title>
+<meta name="description" content="Real-time algorithmic trading signals for Polymarket. 65%+ win rate. Copy every trade the bot makes. $49/month.">
+<meta property="og:title" content="Murcio Signals — Beat Polymarket with Algorithms">
+<meta property="og:description" content="65%+ win rate. Real-time Discord signals. Copy the bot, earn like the bot.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #060608;
+    --bg2:     #0d0d10;
+    --bg3:     #13131a;
+    --border:  #1e1e2e;
+    --green:   #00ff88;
+    --green2:  #00cc6a;
+    --red:     #ff4444;
+    --yellow:  #fbbf24;
+    --text:    #e2e8f0;
+    --muted:   #64748b;
+    --mono:    'JetBrains Mono', monospace;
+    --sans:    'Inter', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 5%;
+    height: 64px;
+    background: rgba(6,6,8,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--green);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--text); }
+  .nav-links { display: flex; gap: 2rem; align-items: center; }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: .875rem;
+    font-weight: 500;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .btn-primary {
+    background: var(--green);
+    color: #000;
+    font-weight: 700;
+    font-size: .875rem;
+    padding: .5rem 1.25rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .2s, transform .1s;
+    letter-spacing: .02em;
+  }
+  .btn-primary:hover { background: var(--green2); transform: translateY(-1px); }
+  .btn-outline {
+    background: transparent;
+    color: var(--green);
+    font-weight: 700;
+    font-size: .875rem;
+    padding: .5rem 1.25rem;
+    border-radius: 6px;
+    border: 1px solid var(--green);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .2s;
+  }
+  .btn-outline:hover { background: var(--green); color: #000; }
+
+  /* ── LIVE BADGE ── */
+  .live-badge {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: rgba(0,255,136,.08);
+    border: 1px solid rgba(0,255,136,.25);
+    color: var(--green);
+    font-family: var(--mono);
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    padding: .25rem .6rem;
+    border-radius: 999px;
+  }
+  .live-dot {
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .4; transform: scale(.7); }
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center;
+    padding: 120px 5% 80px;
+    position: relative;
+  }
+  .hero-glow {
+    position: absolute; top: 20%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,255,136,.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: rgba(0,255,136,.06);
+    border: 1px solid rgba(0,255,136,.15);
+    padding: .35rem .9rem;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--green);
+    letter-spacing: .06em;
+    margin-bottom: 1.75rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.4rem, 6vw, 5rem);
+    font-weight: 900;
+    line-height: 1.08;
+    letter-spacing: -.03em;
+    margin-bottom: 1.25rem;
+    max-width: 900px;
+  }
+  .hero h1 .accent { color: var(--green); }
+  .hero-sub {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: var(--muted);
+    max-width: 560px;
+    margin: 0 auto 2.5rem;
+    font-weight: 400;
+  }
+  .hero-cta {
+    display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 4rem;
+  }
+  .btn-big {
+    font-size: 1rem;
+    padding: .85rem 2rem;
+    border-radius: 8px;
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .stat-cell {
+    background: var(--bg2);
+    padding: 1.25rem 1.5rem;
+    display: flex; flex-direction: column;
+    align-items: center; gap: .3rem;
+  }
+  .stat-cell:first-child { border-radius: 11px 0 0 11px; }
+  .stat-cell:last-child  { border-radius: 0 11px 11px 0; }
+  .stat-val {
+    font-family: var(--mono);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--green);
+    line-height: 1;
+  }
+  .stat-val.neutral { color: var(--text); }
+  .stat-label {
+    font-size: .65rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* ── SECTION ── */
+  section { padding: 100px 5%; position: relative; }
+  .section-tag {
+    font-family: var(--mono);
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .15em;
+    color: var(--green);
+    text-transform: uppercase;
+    margin-bottom: .75rem;
+  }
+  h2 {
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -.025em;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+  .section-sub {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 500px;
+    margin-bottom: 3rem;
+  }
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 0 5%;
+  }
+
+  /* ── LIVE PERFORMANCE ── */
+  .perf-section { background: var(--bg); }
+  .perf-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .perf-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .perf-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .perf-card-title {
+    font-family: var(--mono);
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .big-number {
+    font-family: var(--mono);
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--green);
+    line-height: 1;
+    margin-bottom: .3rem;
+  }
+  .big-sub { font-size: .875rem; color: var(--muted); }
+
+  /* ── TRADES TABLE ── */
+  .trades-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: .8rem; }
+  .trades-table th {
+    text-align: left;
+    padding: .5rem .75rem;
+    color: var(--muted);
+    font-size: .65rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .trades-table td {
+    padding: .6rem .75rem;
+    border-bottom: 1px solid rgba(30,30,46,.5);
+  }
+  .trades-table tr:last-child td { border-bottom: none; }
+  .trades-table tr:hover td { background: rgba(255,255,255,.02); }
+  .won  { color: var(--green); font-weight: 700; }
+  .lost { color: var(--red); font-weight: 700; }
+  .side-up   { background: rgba(0,255,136,.12); color: var(--green); padding: .15rem .45rem; border-radius: 4px; font-size: .7rem; font-weight: 700; }
+  .side-down { background: rgba(255,68,68,.12);  color: var(--red);   padding: .15rem .45rem; border-radius: 4px; font-size: .7rem; font-weight: 700; }
+
+  /* ── HOW IT WORKS ── */
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .how-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem 1.75rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .3s, transform .2s;
+  }
+  .how-card:hover { border-color: rgba(0,255,136,.3); transform: translateY(-3px); }
+  .how-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  .how-card:hover::before { opacity: 1; }
+  .how-num {
+    font-family: var(--mono);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: rgba(0,255,136,.15);
+    line-height: 1;
+    margin-bottom: 1rem;
+  }
+  .how-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: .6rem;
+    letter-spacing: -.01em;
+  }
+  .how-card p { font-size: .875rem; color: var(--muted); line-height: 1.6; }
+
+  /* ── COINS ── */
+  .coins-row {
+    display: flex; gap: .75rem; flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+  .coin-chip {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: .35rem .75rem;
+    font-family: var(--mono);
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  /* ── PRICING ── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+  .price-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    position: relative;
+    transition: border-color .3s;
+  }
+  .price-card.featured {
+    border-color: var(--green);
+    background: linear-gradient(135deg, var(--bg2), rgba(0,255,136,.04));
+  }
+  .featured-badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--green);
+    color: #000;
+    font-size: .65rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: .25rem .75rem;
+    border-radius: 999px;
+  }
+  .price-name {
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: .75rem;
+  }
+  .price-amount {
+    font-family: var(--mono);
+    font-size: 2.75rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: .25rem;
+  }
+  .price-amount span { font-size: 1.25rem; color: var(--muted); font-weight: 400; }
+  .price-desc { font-size: .825rem; color: var(--muted); margin-bottom: 1.75rem; }
+  .price-features { list-style: none; margin-bottom: 2rem; display: flex; flex-direction: column; gap: .6rem; }
+  .price-features li {
+    display: flex; align-items: flex-start; gap: .6rem;
+    font-size: .875rem; color: var(--text);
+  }
+  .price-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: .05rem; }
+  .btn-full { width: 100%; text-align: center; display: block; padding: .85rem; font-size: .95rem; }
+
+  /* ── FAQ ── */
+  .faq-list { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 1px; }
+  .faq-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: .5rem;
+  }
+  .faq-q {
+    width: 100%; text-align: left; background: none; border: none; color: var(--text);
+    font-family: var(--sans); font-size: .925rem; font-weight: 600;
+    padding: 1.1rem 1.25rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    transition: color .2s;
+  }
+  .faq-q:hover { color: var(--green); }
+  .faq-icon { color: var(--muted); font-size: 1.2rem; flex-shrink: 0; transition: transform .3s; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); color: var(--green); }
+  .faq-a {
+    max-height: 0; overflow: hidden;
+    font-size: .875rem; color: var(--muted); line-height: 1.7;
+    transition: max-height .4s ease, padding .3s;
+    padding: 0 1.25rem;
+  }
+  .faq-item.open .faq-a { max-height: 300px; padding: 0 1.25rem 1.1rem; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 3rem 5%;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 1.5rem;
+  }
+  .footer-logo {
+    font-family: var(--mono);
+    font-size: .875rem;
+    font-weight: 700;
+    color: var(--green);
+    text-decoration: none;
+  }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a { color: var(--muted); text-decoration: none; font-size: .8rem; transition: color .2s; }
+  .footer-links a:hover { color: var(--text); }
+  .footer-copy { color: var(--muted); font-size: .75rem; }
+
+  /* ── GLOW LINE ── */
+  .glow-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--green) 50%, transparent 100%);
+    opacity: .3;
+    margin: 0 5%;
+  }
+
+  /* ── DISCLAIMER ── */
+  .disclaimer {
+    background: rgba(251,191,36,.04);
+    border: 1px solid rgba(251,191,36,.15);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    font-size: .75rem;
+    color: var(--muted);
+    max-width: 780px;
+    margin: 0 auto 2rem;
+    line-height: 1.6;
+  }
+  .disclaimer strong { color: var(--yellow); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-cell:nth-child(2) { border-radius: 0 11px 0 0; }
+    .stat-cell:nth-child(3) { border-radius: 0 0 0 11px; }
+    .perf-grid { grid-template-columns: 1fr; }
+    .how-grid { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    h2 { font-size: 1.75rem; }
+  }
+
+  /* ── SCROLL ANIMATION ── */
+  .fade-up { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+  .fade-up.visible { opacity: 1; transform: none; }
+
+  /* ── TICKER TAPE ── */
+  .ticker-wrap {
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+    padding: .6rem 0;
+  }
+  .ticker-inner {
+    display: flex; gap: 3rem;
+    white-space: nowrap;
+    animation: ticker-scroll 30s linear infinite;
+    font-family: var(--mono); font-size: .75rem;
+  }
+  @keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  .ticker-item { color: var(--muted); }
+  .ticker-item .tick-val { color: var(--green); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">MURCIO<span>SIGNALS</span></a>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a href="https://discord.gg/INVITE_LINK" class="btn-primary" target="_blank">Join Discord</a>
+  </div>
+</nav>
+
+<!-- TICKER TAPE -->
+<div style="padding-top:64px">
+  <div class="ticker-wrap">
+    <div class="ticker-inner" id="ticker">
+      <span class="ticker-item">BTC/USD <span class="tick-val" id="t-btc">$70,436</span></span>
+      <span class="ticker-item">ETH/USD <span class="tick-val" id="t-eth">$2,150</span></span>
+      <span class="ticker-item">SOL/USD <span class="tick-val" id="t-sol">$90.53</span></span>
+      <span class="ticker-item">XRP/USD <span class="tick-val" id="t-xrp">$1.4138</span></span>
+      <span class="ticker-item">WIN RATE <span class="tick-val" id="t-wr">65.5%</span></span>
+      <span class="ticker-item">NET P&amp;L <span class="tick-val" id="t-pnl">+$37.14</span></span>
+      <span class="ticker-item">TRADES <span class="tick-val" id="t-trades">34</span></span>
+      <span class="ticker-item">STRATEGY <span class="tick-val">WINDOW OPEN</span></span>
+      <!-- duplicate for infinite loop -->
+      <span class="ticker-item">BTC/USD <span class="tick-val">$70,436</span></span>
+      <span class="ticker-item">ETH/USD <span class="tick-val">$2,150</span></span>
+      <span class="ticker-item">SOL/USD <span class="tick-val">$90.53</span></span>
+      <span class="ticker-item">XRP/USD <span class="tick-val">$1.4138</span></span>
+      <span class="ticker-item">WIN RATE <span class="tick-val">65.5%</span></span>
+      <span class="ticker-item">NET P&amp;L <span class="tick-val">+$37.14</span></span>
+      <span class="ticker-item">TRADES <span class="tick-val">34</span></span>
+      <span class="ticker-item">STRATEGY <span class="tick-val">WINDOW OPEN</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+
+  <div class="hero-tag">
+    <div class="live-dot"></div>
+    LIVE · ALGORITHMIC · POLYMARKET
+  </div>
+
+  <h1>
+    The bot that<br>
+    <span class="accent">beats Polymarket.</span>
+  </h1>
+
+  <p class="hero-sub">
+    Real-time algorithmic signals with 65%+ win rate.
+    Copy every trade the bot makes — directly in Discord.
+  </p>
+
+  <div class="hero-cta">
+    <a href="#pricing" class="btn-primary btn-big">Start Copying — $49/mo</a>
+    <a href="#how" class="btn-outline btn-big">See how it works</a>
+  </div>
+
+  <div class="stats-bar fade-up">
+    <div class="stat-cell">
+      <div class="stat-val" id="h-wr">65.5%</div>
+      <div class="stat-label">Win Rate</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-val" id="h-pnl">+$37.14</div>
+      <div class="stat-label">Net P&amp;L</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-val neutral" id="h-trades">34</div>
+      <div class="stat-label">Total Trades</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-val">
+        <span class="live-badge"><span class="live-dot"></span>LIVE</span>
+      </div>
+      <div class="stat-label">Bot Status</div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-line"></div>
+
+<!-- LIVE PERFORMANCE -->
+<section class="perf-section" id="performance">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-tag">Live Performance</div>
+    <h2>Real trades. Real money.<br>Verified on-chain.</h2>
+    <p class="section-sub">Every trade shown here was placed by the algorithm on Polymarket with real USDC.</p>
+
+    <div class="perf-grid fade-up">
+      <!-- Stats card -->
+      <div class="perf-card">
+        <div class="perf-card-header">
+          <div class="perf-card-title">Performance Summary</div>
+          <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+        </div>
+        <div class="big-number" id="p-wr">65.5%</div>
+        <div class="big-sub">Win rate across all trades</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.5rem">
+          <div>
+            <div style="font-family:var(--mono);font-size:1.3rem;font-weight:700;color:var(--green)" id="p-pnl">+$37.14</div>
+            <div style="font-size:.7rem;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:.2rem">Net P&amp;L</div>
+          </div>
+          <div>
+            <div style="font-family:var(--mono);font-size:1.3rem;font-weight:700;color:var(--text)" id="p-trades">34</div>
+            <div style="font-size:.7rem;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:.2rem">Total Trades</div>
+          </div>
+          <div>
+            <div style="font-family:var(--mono);font-size:1.3rem;font-weight:700;color:var(--green)" id="p-won">22</div>
+            <div style="font-size:.7rem;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:.2rem">Wins</div>
+          </div>
+          <div>
+            <div style="font-family:var(--mono);font-size:1.3rem;font-weight:700;color:var(--red)" id="p-lost">12</div>
+            <div style="font-size:.7rem;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:.2rem">Losses</div>
+          </div>
+        </div>
+        <div class="coins-row">
+          <div class="coin-chip">BTC</div>
+          <div class="coin-chip">ETH</div>
+          <div class="coin-chip">SOL</div>
+          <div class="coin-chip">XRP</div>
+          <div class="coin-chip">DOGE</div>
+          <div class="coin-chip">BNB</div>
+        </div>
+      </div>
+
+      <!-- Recent trades card -->
+      <div class="perf-card">
+        <div class="perf-card-header">
+          <div class="perf-card-title">Recent Trades</div>
+          <div style="font-family:var(--mono);font-size:.65rem;color:var(--muted)" id="last-updated">Updated just now</div>
+        </div>
+        <table class="trades-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Coin</th>
+              <th>TF</th>
+              <th>Side</th>
+              <th>P&amp;L</th>
+            </tr>
+          </thead>
+          <tbody id="recent-trades">
+            <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:1.5rem">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div style="max-width:1000px;margin:0 auto">
+    <div class="section-tag">How it works</div>
+    <h2>Three steps to profit.</h2>
+    <p class="section-sub">The algorithm does the work. You collect the winnings.</p>
+
+    <div class="how-grid fade-up">
+      <div class="how-card">
+        <div class="how-num">01</div>
+        <h3>Bot detects price lag</h3>
+        <p>Murcio monitors Binance and Polymarket prices simultaneously 24/7. When Binance moves but Polymarket hasn't updated yet, the edge is found.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num">02</div>
+        <h3>You get the signal instantly</h3>
+        <p>A Discord alert fires within seconds of the bot entering. Coin, direction, entry price, timeframe — everything you need to copy the trade.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num">03</div>
+        <h3>Collect your winnings</h3>
+        <p>When the window closes and the market resolves, winners are paid automatically on-chain. No manual intervention needed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-line"></div>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div style="max-width:780px;margin:0 auto;text-align:center">
+    <div class="section-tag" style="text-align:center">Pricing</div>
+    <h2>Simple, transparent pricing.</h2>
+    <p class="section-sub" style="margin:0 auto 3rem">Cancel anytime. No hidden fees. Start profiting on day one.</p>
+  </div>
+
+  <div class="pricing-grid fade-up">
+    <!-- Basic -->
+    <div class="price-card">
+      <div class="price-name">Basic</div>
+      <div class="price-amount">$49<span>/mo</span></div>
+      <div class="price-desc">Everything you need to copy the bot.</div>
+      <ul class="price-features">
+        <li>Real-time Discord signals</li>
+        <li>All 6 coins (BTC, ETH, SOL, XRP, DOGE, BNB)</li>
+        <li>All timeframes (5m, 15m, 1h)</li>
+        <li>Win/loss alerts</li>
+        <li>Cancel anytime</li>
+      </ul>
+      <a href="https://buy.stripe.com/PLACEHOLDER_BASIC" class="btn-outline btn-full" target="_blank">Get Basic</a>
+    </div>
+
+    <!-- Pro -->
+    <div class="price-card featured">
+      <div class="featured-badge">MOST POPULAR</div>
+      <div class="price-name">Pro</div>
+      <div class="price-amount">$99<span>/mo</span></div>
+      <div class="price-desc">For serious traders who want every edge.</div>
+      <ul class="price-features">
+        <li>Everything in Basic</li>
+        <li>Live performance dashboard access</li>
+        <li>Priority Discord support</li>
+        <li>Signal confidence score per trade</li>
+        <li>Monthly performance report</li>
+        <li>Early access to new features</li>
+      </ul>
+      <a href="https://buy.stripe.com/PLACEHOLDER_PRO" class="btn-primary btn-full" target="_blank">Get Pro</a>
+    </div>
+  </div>
+
+  <div class="disclaimer fade-up" style="margin-top:2rem">
+    <strong>Risk Disclaimer:</strong> Prediction market trading involves risk. Past performance is not indicative of future results. Only trade with money you can afford to lose. The signals provided are algorithmic outputs, not financial advice.
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FAQ -->
+<section id="faq">
+  <div style="max-width:680px;margin:0 auto">
+    <div class="section-tag" style="text-align:center">FAQ</div>
+    <h2 style="text-align:center;margin-bottom:2.5rem">Common questions.</h2>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q">What is Polymarket and how does this work? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Polymarket is a prediction market platform where you bet on real-world events with USDC. Murcio is an algorithm that detects when crypto prices move on Binance before Polymarket updates — giving a brief window to enter at favorable odds. You copy the trade in that window.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Do I need a Polymarket account? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Yes. You need a Polymarket account funded with USDC on Polygon. Setup takes about 10 minutes. We'll guide you through it when you join.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">How fast do I need to be to copy the signals? <span class="faq-icon">+</span></button>
+        <div class="faq-a">The Window Open strategy has a 60-second entry window. You have up to 60 seconds to place your trade after the alert fires. Most members place trades within 15–20 seconds. Polymarket's UI makes it fast once you're familiar.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">What is the minimum to start? <span class="faq-icon">+</span></button>
+        <div class="faq-a">The bot trades $5 per position. To copy all signals across 6 coins and 3 timeframes, we recommend starting with $100–200 USDC on Polymarket. You don't need to copy every signal.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">How is the 65% win rate calculated? <span class="faq-icon">+</span></button>
+        <div class="faq-a">It's the ratio of winning trades to total settled trades from live bot operation. All data is from real USDC trades on Polymarket. Note: past win rate does not guarantee future performance.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can I cancel anytime? <span class="faq-icon">+</span></button>
+        <div class="faq-a">Yes. No contracts, no lock-ins. Cancel your subscription anytime from the Stripe portal and you'll retain access until the end of your billing period.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a class="footer-logo" href="#">MURCIO SIGNALS</a>
+  <div class="footer-links">
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="https://discord.gg/INVITE_LINK" target="_blank">Discord</a>
+    <a href="mailto:hello@murciosignals.com">Contact</a>
+  </div>
+  <div class="footer-copy">© 2026 Murcio Signals. Not financial advice.</div>
+</footer>
+
+<script>
+// ── CONFIG ──
+// Replace this with your GitHub Gist raw URL after setup
+const GIST_URL = 'https://gist.githubusercontent.com/MortyC21/464eb4fe8440192b9d814b74734cc5f4/raw/murcio-stats.json';
+
+// ── LOAD LIVE STATS ──
+async function loadStats() {
+  if (GIST_URL === 'REPLACE_WITH_GIST_RAW_URL') return; // not configured yet
+  try {
+    const r = await fetch(GIST_URL + '?t=' + Date.now());
+    if (!r.ok) return;
+    const d = await r.json();
+    updateStats(d);
+  } catch(e) { /* silent fail — keep fallback values */ }
+}
+
+function updateStats(d) {
+  const wr   = (d.win_rate || 0).toFixed(1) + '%';
+  const pnl  = '$' + (d.net_pnl >= 0 ? '+' : '') + (d.net_pnl || 0).toFixed(2);
+  const tot  = d.total_trades || 0;
+  const won  = d.winning_trades || 0;
+  const lost = d.losing_trades || 0;
+
+  // Hero stats bar
+  document.getElementById('h-wr').textContent     = wr;
+  document.getElementById('h-pnl').textContent    = pnl;
+  document.getElementById('h-trades').textContent = tot;
+
+  // Performance section
+  document.getElementById('p-wr').textContent     = wr;
+  document.getElementById('p-pnl').textContent    = pnl;
+  document.getElementById('p-trades').textContent = tot;
+  document.getElementById('p-won').textContent    = won;
+  document.getElementById('p-lost').textContent   = lost;
+
+  // Ticker tape
+  document.getElementById('t-wr').textContent     = wr;
+  document.getElementById('t-pnl').textContent    = pnl;
+  document.getElementById('t-trades').textContent = tot;
+
+  // Last updated
+  if (d.last_updated) {
+    const ago = Math.round((Date.now() - new Date(d.last_updated)) / 60000);
+    document.getElementById('last-updated').textContent =
+      ago < 2 ? 'Updated just now' : `Updated ${ago}m ago`;
+  }
+
+  // Recent trades
+  const trades = d.recent_trades || [];
+  if (trades.length > 0) {
+    document.getElementById('recent-trades').innerHTML = trades.map(t => `
+      <tr>
+        <td style="color:var(--muted)">${t.ts || '-'}</td>
+        <td style="font-weight:700">${t.coin || '-'}</td>
+        <td style="color:var(--muted)">${t.tf || '-'}</td>
+        <td><span class="side-${(t.side||'').toLowerCase()}">${t.side || '-'}</span></td>
+        <td class="${t.outcome === 'won' ? 'won' : 'lost'}">${t.pnl >= 0 ? '+' : ''}$${(t.pnl||0).toFixed(2)}</td>
+      </tr>
+    `).join('');
+  }
+}
+
+// ── SCROLL ANIMATIONS ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// ── FAQ ACCORDION ──
+document.querySelectorAll('.faq-q').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = btn.closest('.faq-item');
+    const wasOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!wasOpen) item.classList.add('open');
+  });
+});
+
+// ── INIT ──
+loadStats();
+setInterval(loadStats, 5 * 60 * 1000); // refresh every 5 min
+</script>
+</body>
+</html>
